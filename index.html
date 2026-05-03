@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>হৃদয়ে কেন্দুয়া - ডিজিটাল তথ্য সেবা</title>
+    
+    <meta name="description" content="হৃদয়ে কেন্দুয়া - কেন্দুয়া উপজেলার সকল জরুরি তথ্য ও কন্টাক্ট ডিরেক্টরি।">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#d63031">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css" />
+    
+    <style>
+        :root { 
+            --p: #d63031;
+            --s: #036f23;
+            --header-bg: #d63031;
+            --nav-bg: #036f23;
+            --bg: #f0f3f5;
+            --card: #ffffff;
+        }
+
+        * { -webkit-user-select: none; -ms-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
+        body { font-family: 'Hind Siliguri', sans-serif; background: var(--bg); margin: 0; padding: 0; overflow-x: hidden; scroll-behavior: smooth; }
+
+        #progress-bar { position: fixed; top: 0; left: 0; width: 0; height: 3px; background: #fff; z-index: 4000; transition: width 0.2s; }
+
+        header { 
+            background: var(--header-bg); color: white; padding: 12px 20px; 
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .logo { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; object-fit: cover; background: #fff; }
+
+        /* Custom Slider Styles */
+        .slider-wrapper { position: relative; width: 100%; height: 230px; margin-bottom: 20px; }
+        .slider-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 15px; padding: 10px 15px; scrollbar-width: none; }
+        .slider-container::-webkit-scrollbar { display: none; }
+        .slide { flex: 0 0 280px; height: 180px; scroll-snap-align: start; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        @media (min-width: 768px) { .slide { flex: 0 0 calc(33.33% - 10px); height: 250px; } }
+        .slide img { width: 100%; height: 100%; object-fit: cover; }
+        .slider-dots { display: flex; justify-content: center; gap: 8px; margin-top: 5px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; cursor: pointer; }
+        .dot.active { background: var(--p); }
+
+        .header-right { display: flex; gap: 15px; }
+        .header-right a { font-size: 18px; color: white; transition: 0.2s; }
+        .header-right a:hover { transform: scale(1.1); color: #f0f0f0; }
+
+        /* Card Hover Effects */
+        .card { background: var(--card); border-radius: 12px; overflow: hidden; cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid #eee; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); border-color: var(--p); }
+
+        .drawer {
+            position: fixed; top: 0; left: -100%; width: 300px; height: 100%;
+            background: #fff; z-index: 2100; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 10px 0 30px rgba(0,0,0,0.2); overflow-y: auto;
+        }
+        .drawer.active { left: 0; }
+        .drawer-header { padding: 25px 20px; background: var(--grad); color: white; display: flex; flex-direction: column; align-items: start; gap: 10px; }
+        .drawer-logo { width: 60px; height: 60px; border-radius: 50%; background: #fff; border: 2px solid #fff; margin-bottom: 10px; }
+        .drawer a { padding: 16px 20px; text-decoration: none; color: #2d3436; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #f1f1f1; font-weight: 500; transition: 0.2s; }
+        .drawer a:hover { background: #f8f9fa; color: var(--p); }
+
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; backdrop-filter: blur(3px); }
+
+        .search-area { padding: 20px 15px; max-width: 800px; margin: auto; }
+        #searchInput { 
+            width: 100%; padding: 15px 25px; border-radius: 50px; border: 2px solid transparent; 
+            outline: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); font-family: 'Hind Siliguri'; font-size: 16px; transition: 0.3s;
+        }
+        #searchInput:focus { border-color: var(--p); box-shadow: 0 4px 20px rgba(0,184,148,0.2); }
+
+        .grid { 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; 
+            padding: 5px 10px 100px; max-width: 1200px; margin: auto; 
+        }
+        @media (min-width: 768px) { .grid { grid-template-columns: repeat(6, 1fr); gap: 15px; } }
+
+        .card { background: var(--card); border-radius: 12px; overflow: hidden; cursor: pointer; transition: 0.3s ease; border: 1px solid #ddd; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.15); border-color: var(--p); }
+        
+        .thumb-box { position: relative; width: 100%; padding-top: 100%; background: #eee; border-bottom: 1px solid #eee; }
+        .thumb-box img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        
+        .c-body { padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 700; color: #2d3436; height: 32px; overflow: hidden; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
+
+        #popup {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #fff; z-index: 3000; display: none; flex-direction: column;
+        }
+        .p-header { 
+            padding: 12px 20px; border-bottom: 1px solid #eee; display: flex; 
+            align-items: center; justify-content: space-between; background: #fff;
+            position: sticky; top: 0; z-index: 10;
+        }
+        .p-body { padding: 20px; overflow-y: auto; line-height: 1.8; font-size: 16px; color: #333; }
+        .p-body h2 { font-size: 22px; color: #111; margin: 10px 0; }
+        .share-bar { display: flex; gap: 10px; margin-top: 20px; }
+        .share-btn { padding: 10px 15px; border-radius: 8px; color: white; text-decoration: none; font-size: 14px; flex: 1; text-align: center; }
+        .share-fb { background: #3b5998; }
+        .share-wa { background: #25d366; }
+        .share-imo { background: #0088cc; }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; background: var(--nav-bg); height: 60px;
+            display: flex; justify-content: space-around; align-items: center;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.08); z-index: 1000; border-radius: 15px 15px 0 0;
+            transition: bottom 0.3s ease;
+        }
+        .bottom-nav.hidden { bottom: -70px; }
+        .n-item { text-decoration: none; color: #ffffff; font-size: 10px; text-align: center; font-weight: 600; }
+        .n-item i { display: block; font-size: 20px; margin-bottom: 3px; color: #ffffff; }
+
+        .ticker-wrapper-box { padding: 5px 10px; }
+        .ticker-wrap { position: relative; width: 100%; overflow: hidden; height: 35px; background-color: #fff; color: var(--nav-bg); display: flex; align-items: center; border: 1px solid var(--nav-bg); border-radius: 5px; z-index: 100; }
+        .ticker-label { background: var(--nav-bg); color: white; padding: 0 10px; height: 100%; display: flex; align-items: center; font-weight: bold; font-size: 14px; white-space: nowrap; }
+        .ticker { display: flex; animation: ticker 25s linear infinite; white-space: nowrap; flex: 1; align-items: center; }
+        .ticker__item { padding: 0 20px; font-size: 14px; flex-shrink: 0; }
+        @keyframes ticker { 0% { transform: translate3d(100%, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+
+        #loader { text-align: center; padding: 100px; color: var(--p); font-size: 18px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<header>
+    <div class="header-left">
+        <i class="fas fa-bars-staggered" onclick="toggleM(true)" style="font-size:20px; cursor:pointer;"></i>
+        <img src="https://blogger.googleusercontent.com/img/a/AVvXsEh4OZT4ivBKREUCVYA7uliclvbOXuTAI_FKmmGUM05CTGJDX6Vwjtul4UPirTe6hhudDvx_crcCj99jN9qcKIRk9VMvlEcYwfAD3eQ0FniFd7j3tGhTxbaTtf93kYpa4oSHGwT5g4c11VeOmFnNiZqc8VxzbHVjecRPX9VdNGXdKCFrsQzTzt37kpCgN8k=s300" class="logo" alt="logo">
+        <h1 style="font-size:16px; margin:0; font-weight:700;">হৃদয়ে কেন্দুয়া</h1>
+    </div>
+    <div class="header-right">
+        <a href="tel:017XXXXXXXX"><i class="fas fa-phone"></i></a>
+        <a href="https://facebook.com/hridoyekendua"><i class="fab fa-facebook"></i></a>
+        <a href="#"><i class="fas fa-search"></i></a>
+        <a href="#"><i class="fas fa-user"></i></a>
+    </div>
+</header>
+<div class="slider-wrapper" id="slider"></div>
+<div class="overlay" id="overlay" onclick="toggleM(false)"></div>
+<div class="drawer" id="drawer">
+    <div class="drawer-header">
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhSN6Zp2wW3GgSjzMuH9guujHXo92mzgNE_drEnGwZ1JJ0n4rPXGvJFYhdxkyLOc0Wb6NZJvSrkHz2S3bI4SNXo1mTxrrlfbn0EaBSdE5Sch8TOpQW2BPIMfnEncsIPmPcF8SN3K9rcmDdSkcICOp-f2TXWaVnIN6O5KyMGoDyIV_Y39pVbjJ1ICjSYsYU/s200/0101.png" class="drawer-logo" alt="logo">
+        <span style="font-size:20px; font-weight:700;">হৃদয়ে কেন্দুয়া</span>
+    </div>
+    <div id="drawerMenu">
+        <a href="#home" onclick="toggleM(false)"><i class="fas fa-home"></i> হোম</a>
+    </div>
+</div>
+
+<div class="ticker-wrapper-box">
+    <div class="ticker-wrap">
+        <div class="ticker-label">ঘোষণাঃ</div>
+        <div class="ticker" id="tickerContent">
+            <div class="ticker__item" id="dateDisplay">আজকের তারিখ লোড হচ্ছে...</div>
+            <div class="ticker__item">হৃদয়ে কেন্দুয়া ওয়েব সাইটে আপনাকে স্বাগতম!</div>
+            <div class="ticker__item">কেন্দুয়া উপজেলা সম্পর্কে জানতে এবং জরুরী তথ্য পেতে নিয়মিত ভিজিট করুন</div>
+        </div>
+    </div>
+</div>
+
+<div id="custom-html-area" class="custom-html-area"></div>
+<div class="search-area">
+    <input type="text" id="searchInput" onkeyup="search()" placeholder="নাম বা সেবা লিখে খুঁজুন...">
+</div>
+
+<div id="loader"><i class="fas fa-spinner fa-spin"></i> তথ্য লোড হচ্ছে...</div>
+<div class="grid" id="grid"></div>
+
+<div id="popup">
+    <div class="p-header">
+        <div onclick="closeP()" style="color:var(--p); font-weight:700; cursor:pointer; font-size:18px;">
+            <i class="fas fa-chevron-left"></i> ফিরে যান
+        </div>
+        <img src="https://blogger.googleusercontent.com/img/a/AVvXsEh4OZT4ivBKREUCVYA7uliclvbOXuTAI_FKmmGUM05CTGJDX6Vwjtul4UPirTe6hhudDvx_crcCj99jN9qcKIRk9VMvlEcYwfAD3eQ0FniFd7j3tGhTxbaTtf93kYpa4oSHGwT5g4c11VeOmFnNiZqc8VxzbHVjecRPX9VdNGXdKCFrsQzTzt37kpCgN8k=s300" style="height:35px; border-radius:50%;" alt="logo">
+    </div>
+    <div class="p-body" id="pBody"></div>
+</div>
+
+<div class="bottom-nav">
+    <a href="/" class="n-item"><i class="fas fa-house"></i>হোম</a>
+    <a href="/search/label/Doctor" class="n-item"><i class="fas fa-stethoscope"></i>ডাক্তার</a>
+    <a href="tel:999" class="n-item"><i class="fas fa-phone-volume"></i>হেল্পলাইন</a>
+    <a href="https://tv.hridoyekendua.com/" target="_blank" class="n-item"><i class="fas fa-tv"></i>লাইভ টিভি</a>
+    <a href="/p/contact.html" class="n-item"><i class="fas fa-id-badge"></i>যোগাযোগ</a>
+</div>
+
+<script>
+    const blogUrl = "https://www.hridoyekendua.com";
+    let posts = [];
+    let pages = [];
+    let slideIndex = 0;
+
+    function initDate() {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js';
+        script.onload = () => {
+             const script2 = document.createElement('script');
+             script2.src = 'https://cdn.jsdelivr.net/gh/pixeltoart/bangladate@refs/heads/main/buetDateTime.js';
+             script2.onload = () => {
+                 var data = new buetDateConverter().convert("l, j F, Y (বঙ্গাব্দ)");
+                 document.getElementById('dateDisplay').innerText = data;
+             };
+             document.body.appendChild(script2);
+        };
+        document.body.appendChild(script);
+    }
+
+    function toggleM(show) {
+        const d = document.getElementById('drawer');
+        const o = document.getElementById('overlay');
+        if(show) { d.classList.add('active'); o.style.display = 'block'; }
+        else { d.classList.remove('active'); o.style.display = 'none'; }
+    }
+
+    function initSlider() {
+        const images = [
+            'https://bdnetworks.github.io/img/bg-img/02.png',
+            'https://bdnetworks.github.io/img/bg-img/03.png',
+            'https://bdnetworks.github.io/img/bg-img/04.png',
+            'https://bdnetworks.github.io/img/bg-img/05.png'
+        ];
+        const slider = document.getElementById('slider');
+        slider.innerHTML = `
+            <div class="slider-container" id="sliderContainer">
+                ${images.map(img => `
+                    <div class="slide">
+                        <img src="${img}" alt="banner">
+                    </div>
+                `).join('')}
+            </div>
+            <div class="slider-dots">
+                ${images.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}" onclick="currentSlide(${i})"></div>`).join('')}
+            </div>
+        `;
+
+        const container = document.getElementById('sliderContainer');
+        
+        setInterval(() => {
+            slideIndex = (slideIndex + 1) % images.length;
+            const slideWidth = container.querySelector('.slide').offsetWidth + 15; // +gap
+            container.scrollTo({ left: slideIndex * slideWidth, behavior: 'smooth' });
+            updateDots(slideIndex);
+        }, 3000);
+    }
+
+    function updateDots(n) {
+        const dots = document.querySelectorAll('.dot');
+        dots.forEach(d => d.classList.remove('active'));
+        dots[n].classList.add('active');
+    }
+
+    function currentSlide(n) {
+        slideIndex = n;
+        const container = document.getElementById('sliderContainer');
+        const slideWidth = container.querySelector('.slide').offsetWidth + 15;
+        container.scrollTo({ left: slideIndex * slideWidth, behavior: 'smooth' });
+        updateDots(n);
+    }
+
+    function loadData() {
+        initSlider();
+        const script = document.createElement('script');
+        script.src = `${blogUrl}/feeds/posts/default?alt=json-in-script&callback=processPosts&max-results=500`;
+        document.body.appendChild(script);
+
+        const pageScript = document.createElement('script');
+        pageScript.src = `${blogUrl}/feeds/pages/default?alt=json-in-script&callback=processPages`;
+        document.body.appendChild(pageScript);
+    }
+
+    function processPosts(json) {
+        posts = json.feed.entry || [];
+        renderPosts(posts);
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('progress-bar').style.width = '100%';
+        handleRouting();
+    }
+
+    function processPages(json) {
+        pages = json.feed.entry || [];
+        const container = document.getElementById('drawerMenu');
+        pages.forEach(p => {
+            const title = p.title.$t;
+            const id = p.id.$t.split('-').pop(); // Simple ID extraction
+            container.innerHTML += `<a href="#page/${id}" onclick="toggleM(false)"><i class="fas fa-file-lines"></i> ${title}</a>`;
+        });
+        handleRouting();
+    }
+
+    function renderSlider(data) {
+        const container = document.getElementById('slider');
+        container.innerHTML = data.map((item, i) => {
+            const title = item.title.$t;
+            const thumb = item.media$thumbnail ? item.media$thumbnail.url.replace('s72-c', 's400-c') : 'https://via.placeholder.com/400x150?text=Logo';
+            const postId = item.id.$t.split('-').pop();
+            return `
+                <div class="slider-item" onclick="window.location.hash='#post/${postId}'">
+                    <img src="${thumb}" alt="${title}">
+                    <div class="slider-text">${title}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderPosts(data) {
+        const container = document.getElementById('grid');
+        container.innerHTML = data.map((item, i) => {
+            const title = item.title.$t;
+            const thumb = item.media$thumbnail ? item.media$thumbnail.url.replace('s72-c', 's400-c') : 'https://via.placeholder.com/400x400?text=Logo';
+            const postId = item.id.$t.split('-').pop();
+            return `
+                <div class="card" onclick="window.location.hash='#post/${postId}'">
+                    <div class="thumb-box">
+                        <img src="${thumb}" alt="${title}" loading="lazy">
+                    </div>
+                    <div class="c-body">${title}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function openContent(type, id) {
+        const item = type === 'post' ? posts.find(p => p.id.$t.split('-').pop() === id) : pages.find(p => p.id.$t.split('-').pop() === id);
+        if(!item) return;
+
+        const title = item.title.$t;
+        const link = window.location.href; // Use current URL
+        const content = item.content ? item.content.$t : item.summary.$t;
+
+        let html = `<div class="entry-content">${content}</div>`;
+        
+        if (type === 'post') {
+            html += `<div class="share-bar">
+                <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}" class="share-btn share-fb" target="_blank"><i class="fab fa-facebook"></i> FB</a>
+                <a href="https://wa.me/?text=${encodeURIComponent(link)}" class="share-btn share-wa" target="_blank"><i class="fab fa-whatsapp"></i> WA</a>
+                <a href="imo://chat?send&link=${encodeURIComponent(link)}" class="share-btn share-imo"><i class="fas fa-paper-plane"></i> IMO</a>
+                <button onclick="navigator.clipboard.writeText('${link}').then(()=>alert('Link copied!'))" class="share-btn" style="background:#777;"><i class="fas fa-copy"></i> Copy</button>
+            </div>`;
+        }
+
+        document.getElementById('pBody').innerHTML = html;
+        document.getElementById('popup').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeP() {
+        document.getElementById('popup').style.display = 'none';
+        document.body.style.overflow = 'auto';
+        window.history.pushState("", document.title, window.location.pathname);
+    }
+
+    function handleRouting() {
+        const hash = window.location.hash;
+        if (hash.startsWith('#post/')) {
+            openContent('post', hash.split('/')[1]);
+        } else if (hash.startsWith('#page/')) {
+            openContent('page', hash.split('/')[1]);
+        } else if (hash === '#home' || hash === '') {
+            closeP();
+        }
+    }
+
+    window.addEventListener("hashchange", handleRouting);
+
+    function search() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        renderPosts(posts.filter(p => p.title.$t.toLowerCase().includes(q)));
+    }
+
+    document.onkeydown = (e) => {
+        if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) || (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) { return false; }
+    };
+
+    let lastScrollTop = 0;
+    window.addEventListener("scroll", function(){
+        let st = window.pageYOffset || document.documentElement.scrollTop;
+        const nav = document.querySelector('.bottom-nav');
+        if (st > lastScrollTop && st > 100){
+            nav.classList.add('hidden');
+        } else {
+            nav.classList.remove('hidden');
+        }
+        lastScrollTop = st <= 0 ? 0 : st;
+    }, false);
+
+    window.onload = () => {
+        loadData();
+        initDate();
+    };
+</script>
+</body>
+</html>
+
